@@ -3,526 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#3B82F6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Budget Tracker">
     <title>Huisaankoop Budget Tracker</title>
-    
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkh1aXNhYW5rb29wIEJ1ZGdldCBUcmFja2VyIiwKICAic2hvcnRfbmFtZSI6ICJCdWRnZXQiLAogICJkZXNjcmlwdGlvbiI6ICJCZWhlaXIgamUgaHVpc2Fhbmtvb3AgYnVkZ2V0IiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmZmZmZmIiwKICAidGhlbWVfY29sb3IiOiAiIzNCODJGNiIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5Mic%2BJTNDcmVjdCB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5MicgZmlsbD0nJTIzM0I4MkY2Jy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPSc4MCcgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdBcmlhbCcgdGV4dC1hbmNob3I9J21pZGRsZScgZHk9Jy4zZW0nJTNF4oKsJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzM0I4MkY2Jy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyMDAnIGZpbGw9J3doaXRlJyBmb250LWZhbWlseT0nQXJpYWwnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGR5PScuM2VtJyUzReKCrCUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <style>
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-        
-        .icon {
-            width: 20px;
-            height: 20px;
-            display: inline-block;
-            vertical-align: middle;
-        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .icon { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script>
-        // Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    const CACHE_NAME = 'budget-tracker-v1';
-                    self.addEventListener('install', (e) => {
-                        e.waitUntil(
-                            caches.open(CACHE_NAME).then((cache) => {
-                                return cache.addAll(['/']);
-                            })
-                        );
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(
-                            caches.match(e.request).then((response) => {
-                                return response || fetch(e.request);
-                            })
-                        );
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
-        }
-
         const { useState, useEffect } = React;
         const e = React.createElement;
 
-        // Icons as SVG components
         const PlusIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M12 4v16m8-8H4' })
-        );
-
+            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M12 4v16m8-8H4' }));
         const TrashIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' })
-        );
-
+            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' }));
         const EditIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' })
-        );
-
-        const FileIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' })
-        );
-
+            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' }));
         const XIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M6 18L18 6M6 6l12 12' })
-        );
-
+            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M6 18L18 6M6 6l12 12' }));
         const CheckIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M5 13l4 4L19 7' })
-        );
-
+            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M5 13l4 4L19 7' }));
         const SplitIcon = () => e('svg', { className: 'icon', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' },
-            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01' })
-        );
+            e('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01' }));
 
         function BudgetTracker() {
             const [startBudget, setStartBudget] = useState(() => {
                 const saved = localStorage.getItem('startBudget');
                 return saved ? parseFloat(saved) : 250000;
             });
-            
             const [transactions, setTransactions] = useState(() => {
                 const saved = localStorage.getItem('transactions');
                 return saved ? JSON.parse(saved) : [];
             });
-            
+            const [categories, setCategories] = useState(() => {
+                const saved = localStorage.getItem('categories');
+                return saved ? JSON.parse(saved) : ['Vloeren', 'Keuken', 'Badkamer', 'Tuin', 'Elektra', 'Schilderwerk', 'Overig'];
+            });
             const [showForm, setShowForm] = useState(false);
             const [editingId, setEditingId] = useState(null);
             const [formData, setFormData] = useState({
-                description: '',
-                amount: '',
-                type: 'uitgave',
-                category: '',
-                date: new Date().toISOString().split('T')[0],
-                notes: '',
-                files: []
+                description: '', amount: '', type: 'uitgave', category: '',
+                date: new Date().toISOString().split('T')[0], notes: '', files: []
             });
             const [showSplit, setShowSplit] = useState(false);
             const [splitItems, setSplitItems] = useState([{ description: '', amount: '' }]);
+            const [newCategoryInput, setNewCategoryInput] = useState('');
+            const [showNewCategory, setShowNewCategory] = useState(false);
 
-            const categories = ['Vloeren', 'Keuken', 'Badkamer', 'Tuin', 'Elektra', 'Schilderwerk', 'Overig'];
+            useEffect(() => { localStorage.setItem('startBudget', startBudget.toString()); }, [startBudget]);
+            useEffect(() => { localStorage.setItem('transactions', JSON.stringify(transactions)); }, [transactions]);
+            useEffect(() => { localStorage.setItem('categories', JSON.stringify(categories)); }, [categories]);
 
-            useEffect(() => {
-                localStorage.setItem('startBudget', startBudget.toString());
-            }, [startBudget]);
-
-            useEffect(() => {
-                localStorage.setItem('transactions', JSON.stringify(transactions));
-            }, [transactions]);
-
-            const totalSpent = transactions.reduce((sum, t) => {
-                return t.type === 'uitgave' ? sum + t.amount : sum - t.amount;
-            }, 0);
+            const totalSpent = transactions.reduce((sum, t) => t.type === 'uitgave' ? sum + t.amount : sum - t.amount, 0);
             const remaining = startBudget - totalSpent;
 
-            const handleFileUpload = (ev) => {
-                const files = Array.from(ev.target.files);
-                const fileData = files.map(file => ({
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    data: URL.createObjectURL(file)
-                }));
-                setFormData(prev => ({ ...prev, files: [...prev.files, ...fileData] }));
-            };
-
-            const removeFile = (index) => {
-                setFormData(prev => ({
-                    ...prev,
-                    files: prev.files.filter((_, i) => i !== index)
-                }));
-            };
-
-            const addSplitItem = () => {
-                setSplitItems([...splitItems, { description: '', amount: '' }]);
-            };
-
-            const updateSplitItem = (index, field, value) => {
-                const updated = [...splitItems];
-                updated[index][field] = value;
-                setSplitItems(updated);
-            };
-
-            const removeSplitItem = (index) => {
-                setSplitItems(splitItems.filter((_, i) => i !== index));
+            const addNewCategory = () => {
+                if (newCategoryInput.trim() && !categories.includes(newCategoryInput.trim())) {
+                    const newCat = newCategoryInput.trim();
+                    setCategories([...categories, newCat]);
+                    setFormData(p => ({ ...p, category: newCat }));
+                    setNewCategoryInput('');
+                    setShowNewCategory(false);
+                }
             };
 
             const handleSubmit = () => {
-                if (!formData.description) {
-                    alert('Vul een beschrijving in');
-                    return;
+                if (!formData.description || (!showSplit && !formData.amount)) {
+                    alert('Vul alle verplichte velden in'); return;
                 }
-
-                if (!showSplit && !formData.amount) {
-                    alert('Vul een bedrag in');
-                    return;
-                }
-                
                 if (showSplit) {
-                    const validSplits = splitItems.filter(item => item.description && item.amount);
-                    if (validSplits.length === 0) {
-                        alert('Voeg minimaal één geldige split toe');
-                        return;
-                    }
+                    const validSplits = splitItems.filter(i => i.description && i.amount);
+                    if (validSplits.length === 0) { alert('Voeg minimaal één split toe'); return; }
                     validSplits.forEach(split => {
-                        const transaction = {
+                        setTransactions(prev => [...prev, {
                             id: Date.now() + Math.random(),
                             description: `${formData.description} - ${split.description}`,
-                            amount: parseFloat(split.amount),
-                            type: formData.type,
-                            category: formData.category,
-                            date: formData.date,
-                            notes: formData.notes,
-                            files: formData.files,
-                            isSplit: true
-                        };
-                        setTransactions(prev => [...prev, transaction]);
+                            amount: parseFloat(split.amount), type: formData.type,
+                            category: formData.category, date: formData.date,
+                            notes: formData.notes, files: formData.files, isSplit: true
+                        }]);
                     });
                 } else if (editingId) {
-                    setTransactions(prev => prev.map(t => 
-                        t.id === editingId 
-                            ? { ...t, ...formData, amount: parseFloat(formData.amount) }
-                            : t
-                    ));
+                    setTransactions(prev => prev.map(t => t.id === editingId 
+                        ? { ...t, ...formData, amount: parseFloat(formData.amount) } : t));
                     setEditingId(null);
                 } else {
-                    const transaction = {
-                        id: Date.now(),
-                        ...formData,
-                        amount: parseFloat(formData.amount)
-                    };
-                    setTransactions(prev => [...prev, transaction]);
+                    setTransactions(prev => [...prev, { id: Date.now(), ...formData, amount: parseFloat(formData.amount) }]);
                 }
-
-                resetForm();
-            };
-
-            const resetForm = () => {
-                setFormData({
-                    description: '',
-                    amount: '',
-                    type: 'uitgave',
-                    category: '',
-                    date: new Date().toISOString().split('T')[0],
-                    notes: '',
-                    files: []
-                });
+                setFormData({ description: '', amount: '', type: 'uitgave', category: '',
+                    date: new Date().toISOString().split('T')[0], notes: '', files: [] });
                 setSplitItems([{ description: '', amount: '' }]);
-                setShowForm(false);
-                setShowSplit(false);
-                setEditingId(null);
-            };
-
-            const editTransaction = (transaction) => {
-                setFormData({
-                    description: transaction.description,
-                    amount: transaction.amount.toString(),
-                    type: transaction.type,
-                    category: transaction.category,
-                    date: transaction.date,
-                    notes: transaction.notes,
-                    files: transaction.files
-                });
-                setEditingId(transaction.id);
-                setShowForm(true);
-            };
-
-            const deleteTransaction = (id) => {
-                if (confirm('Weet je zeker dat je deze transactie wilt verwijderen?')) {
-                    setTransactions(prev => prev.filter(t => t.id !== id));
-                }
+                setShowForm(false); setShowSplit(false);
             };
 
             return e('div', { className: 'min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4' },
                 e('div', { className: 'max-w-6xl mx-auto' },
-                    // Header
                     e('div', { className: 'bg-white rounded-2xl shadow-lg p-6 mb-6' },
                         e('h1', { className: 'text-3xl font-bold text-gray-800 mb-4' }, 'Huisaankoop Budget'),
-                        
                         e('div', { className: 'mb-4' },
                             e('label', { className: 'block text-sm font-medium text-gray-600 mb-2' }, 'Start Budget (€)'),
                             e('input', {
-                                type: 'number',
-                                value: startBudget,
+                                type: 'number', value: startBudget,
                                 onChange: (ev) => setStartBudget(parseFloat(ev.target.value) || 0),
-                                className: 'w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                className: 'w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
                             })
                         ),
-
                         e('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
                             e('div', { className: 'bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white' },
                                 e('div', { className: 'text-sm opacity-90' }, 'Start Budget'),
-                                e('div', { className: 'text-2xl font-bold' }, `€ ${startBudget.toLocaleString('nl-NL')}`)
-                            ),
+                                e('div', { className: 'text-2xl font-bold' }, `€ ${startBudget.toLocaleString('nl-NL')}`)),
                             e('div', { className: 'bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white' },
                                 e('div', { className: 'text-sm opacity-90' }, 'Uitgegeven'),
-                                e('div', { className: 'text-2xl font-bold' }, `€ ${totalSpent.toLocaleString('nl-NL')}`)
-                            ),
+                                e('div', { className: 'text-2xl font-bold' }, `€ ${totalSpent.toLocaleString('nl-NL')}`)),
                             e('div', { className: `bg-gradient-to-br ${remaining >= 0 ? 'from-green-500 to-green-600' : 'from-orange-500 to-orange-600'} rounded-xl p-4 text-white` },
                                 e('div', { className: 'text-sm opacity-90' }, 'Resterend'),
-                                e('div', { className: 'text-2xl font-bold' }, `€ ${remaining.toLocaleString('nl-NL')}`)
-                            )
+                                e('div', { className: 'text-2xl font-bold' }, `€ ${remaining.toLocaleString('nl-NL')}`))
                         )
                     ),
-
-                    // Add Button
                     !showForm && e('button', {
                         onClick: () => setShowForm(true),
-                        className: 'w-full md:w-auto mb-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg'
+                        className: 'w-full md:w-auto mb-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg'
                     }, e(PlusIcon), 'Nieuwe Uitgave/Minderwerk'),
-
-                    // Form
                     showForm && e('div', { className: 'bg-white rounded-2xl shadow-lg p-6 mb-6' },
                         e('div', { className: 'flex justify-between items-center mb-4' },
-                            e('h2', { className: 'text-xl font-bold text-gray-800' }, 
-                                editingId ? 'Bewerk Transactie' : 'Nieuwe Transactie'
-                            ),
-                            e('button', {
-                                onClick: resetForm,
-                                className: 'text-gray-400 hover:text-gray-600'
-                            }, e(XIcon))
+                            e('h2', { className: 'text-xl font-bold' }, editingId ? 'Bewerk' : 'Nieuwe Transactie'),
+                            e('button', { onClick: () => { setShowForm(false); setEditingId(null); setShowNewCategory(false); } }, e(XIcon))
                         ),
-
                         e('div', { className: 'space-y-4' },
                             e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
-                                // Description
                                 e('div', null,
-                                    e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Beschrijving *'),
-                                    e('input', {
-                                        type: 'text',
-                                        value: formData.description,
-                                        onChange: (ev) => setFormData(prev => ({ ...prev, description: ev.target.value })),
-                                        className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                                        placeholder: 'Bijv. Laminaat woonkamer'
-                                    })
-                                ),
-
-                                // Type
+                                    e('label', { className: 'block text-sm font-medium mb-1' }, 'Beschrijving *'),
+                                    e('input', { type: 'text', value: formData.description,
+                                        onChange: (ev) => setFormData(p => ({ ...p, description: ev.target.value })),
+                                        className: 'w-full px-4 py-2 border rounded-lg', placeholder: 'Bijv. Laminaat' })),
                                 e('div', null,
-                                    e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Type *'),
-                                    e('select', {
-                                        value: formData.type,
-                                        onChange: (ev) => setFormData(prev => ({ ...prev, type: ev.target.value })),
-                                        className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                    },
-                                        e('option', { value: 'uitgave' }, 'Meerwerk (uitgave)'),
-                                        e('option', { value: 'minderwerk' }, 'Minderwerk (korting)')
-                                    )
-                                ),
-
-                                // Amount
+                                    e('label', { className: 'block text-sm font-medium mb-1' }, 'Type *'),
+                                    e('select', { value: formData.type,
+                                        onChange: (ev) => setFormData(p => ({ ...p, type: ev.target.value })),
+                                        className: 'w-full px-4 py-2 border rounded-lg' },
+                                        e('option', { value: 'uitgave' }, 'Meerwerk'),
+                                        e('option', { value: 'minderwerk' }, 'Minderwerk'))),
                                 !showSplit && e('div', null,
-                                    e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Bedrag (€) *'),
-                                    e('input', {
-                                        type: 'number',
-                                        step: '0.01',
-                                        value: formData.amount,
-                                        onChange: (ev) => setFormData(prev => ({ ...prev, amount: ev.target.value })),
-                                        className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                                        placeholder: '0.00'
-                                    })
-                                ),
-
-                                // Category
+                                    e('label', { className: 'block text-sm font-medium mb-1' }, 'Bedrag (€) *'),
+                                    e('input', { type: 'number', step: '0.01', value: formData.amount,
+                                        onChange: (ev) => setFormData(p => ({ ...p, amount: ev.target.value })),
+                                        className: 'w-full px-4 py-2 border rounded-lg' })),
                                 e('div', null,
-                                    e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Categorie'),
-                                    e('select', {
-                                        value: formData.category,
-                                        onChange: (ev) => setFormData(prev => ({ ...prev, category: ev.target.value })),
-                                        className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                    },
-                                        e('option', { value: '' }, 'Selecteer categorie'),
-                                        ...categories.map(cat => e('option', { key: cat, value: cat }, cat))
-                                    )
-                                ),
-
-                                // Date
-                                e('div', null,
-                                    e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Datum *'),
-                                    e('input', {
-                                        type: 'date',
-                                        value: formData.date,
-                                        onChange: (ev) => setFormData(prev => ({ ...prev, date: ev.target.value })),
-                                        className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                    })
-                                )
-                            ),
-
-                            // Notes
-                            e('div', null,
-                                e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Notities'),
-                                e('textarea', {
-                                    value: formData.notes,
-                                    onChange: (ev) => setFormData(prev => ({ ...prev, notes: ev.target.value })),
-                                    rows: 3,
-                                    className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                                    placeholder: 'Extra informatie...'
-                                })
-                            ),
-
-                            // Files
-                            e('div', null,
-                                e('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, 'Offertes/Documenten'),
-                                e('input', {
-                                    type: 'file',
-                                    multiple: true,
-                                    onChange: handleFileUpload,
-                                    className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                                    accept: '.pdf,.jpg,.jpeg,.png,.doc,.docx'
-                                }),
-                                formData.files.length > 0 && e('div', { className: 'mt-2 space-y-2' },
-                                    ...formData.files.map((file, index) =>
-                                        e('div', { key: index, className: 'flex items-center justify-between bg-gray-50 p-2 rounded' },
-                                            e('span', { className: 'text-sm text-gray-700' }, file.name),
+                                    e('label', { className: 'block text-sm font-medium mb-1' }, 'Categorie'),
+                                    e('div', { className: 'space-y-2' },
+                                        e('select', { 
+                                            value: formData.category,
+                                            onChange: (ev) => {
+                                                if (ev.target.value === '__add_new__') {
+                                                    setShowNewCategory(true);
+                                                } else {
+                                                    setFormData(p => ({ ...p, category: ev.target.value }));
+                                                }
+                                            },
+                                            className: 'w-full px-4 py-2 border rounded-lg' 
+                                        },
+                                            e('option', { value: '' }, 'Selecteer categorie'),
+                                            ...categories.map(c => e('option', { key: c, value: c }, c)),
+                                            e('option', { value: '__add_new__', className: 'font-bold text-blue-600' }, '+ Nieuwe categorie toevoegen')
+                                        ),
+                                        showNewCategory && e('div', { className: 'flex gap-2 p-3 bg-blue-50 rounded-lg' },
+                                            e('input', {
+                                                type: 'text',
+                                                value: newCategoryInput,
+                                                onChange: (ev) => setNewCategoryInput(ev.target.value),
+                                                placeholder: 'Nieuwe categorie naam',
+                                                className: 'flex-1 px-4 py-2 border rounded-lg',
+                                                onKeyPress: (ev) => { if (ev.key === 'Enter') addNewCategory(); }
+                                            }),
                                             e('button', {
-                                                onClick: () => removeFile(index),
-                                                className: 'text-red-500 hover:text-red-700'
+                                                onClick: addNewCategory,
+                                                className: 'px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium'
+                                            }, e(CheckIcon)),
+                                            e('button', {
+                                                onClick: () => { setShowNewCategory(false); setNewCategoryInput(''); },
+                                                className: 'px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400'
                                             }, e(XIcon))
                                         )
                                     )
-                                )
-                            ),
-
-                            // Split button
-                            !editingId && e('div', null,
-                                e('button', {
-                                    onClick: () => setShowSplit(!showSplit),
-                                    className: 'flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium'
-                                }, e(SplitIcon), showSplit ? 'Geen splitsing' : 'Bedrag splitsen')
-                            ),
-
-                            // Split items
-                            showSplit && e('div', { className: 'border-t pt-4' },
-                                e('h3', { className: 'font-medium text-gray-700 mb-3' }, 'Splits in meerdere posten'),
-                                ...splitItems.map((item, index) =>
-                                    e('div', { key: index, className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-3' },
-                                        e('input', {
-                                            type: 'text',
-                                            value: item.description,
-                                            onChange: (ev) => updateSplitItem(index, 'description', ev.target.value),
-                                            placeholder: 'Omschrijving',
-                                            className: 'px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                        }),
-                                        e('div', { className: 'flex gap-2' },
-                                            e('input', {
-                                                type: 'number',
-                                                step: '0.01',
-                                                value: item.amount,
-                                                onChange: (ev) => updateSplitItem(index, 'amount', ev.target.value),
-                                                placeholder: 'Bedrag (€)',
-                                                className: 'flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                            }),
-                                            splitItems.length > 1 && e('button', {
-                                                onClick: () => removeSplitItem(index),
-                                                className: 'px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg'
-                                            }, e(TrashIcon))
-                                        )
-                                    )
                                 ),
-                                e('button', {
-                                    onClick: addSplitItem,
-                                    className: 'text-sm text-blue-600 hover:text-blue-700 font-medium'
-                                }, '+ Nog een post toevoegen')
+                                e('div', null,
+                                    e('label', { className: 'block text-sm font-medium mb-1' }, 'Datum *'),
+                                    e('input', { type: 'date', value: formData.date,
+                                        onChange: (ev) => setFormData(p => ({ ...p, date: ev.target.value })),
+                                        className: 'w-full px-4 py-2 border rounded-lg' }))
                             ),
-
-                            // Submit buttons
+                            !editingId && e('button', {
+                                onClick: () => setShowSplit(!showSplit),
+                                className: 'flex items-center gap-2 text-blue-600 font-medium'
+                            }, e(SplitIcon), showSplit ? 'Geen splitsing' : 'Bedrag splitsen'),
+                            showSplit && e('div', { className: 'border-t pt-4' },
+                                e('h3', { className: 'font-medium mb-3' }, 'Splits in posten'),
+                                ...splitItems.map((item, i) =>
+                                    e('div', { key: i, className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-3' },
+                                        e('input', { type: 'text', value: item.description,
+                                            onChange: (ev) => {
+                                                const u = [...splitItems]; u[i].description = ev.target.value; setSplitItems(u);
+                                            }, placeholder: 'Omschrijving', className: 'px-4 py-2 border rounded-lg' }),
+                                        e('div', { className: 'flex gap-2' },
+                                            e('input', { type: 'number', step: '0.01', value: item.amount,
+                                                onChange: (ev) => {
+                                                    const u = [...splitItems]; u[i].amount = ev.target.value; setSplitItems(u);
+                                                }, placeholder: '€', className: 'flex-1 px-4 py-2 border rounded-lg' }),
+                                            splitItems.length > 1 && e('button', {
+                                                onClick: () => setSplitItems(splitItems.filter((_, idx) => idx !== i)),
+                                                className: 'px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg'
+                                            }, e(TrashIcon))))),
+                                e('button', {
+                                    onClick: () => setSplitItems([...splitItems, { description: '', amount: '' }]),
+                                    className: 'text-sm text-blue-600 font-medium'
+                                }, '+ Post toevoegen')),
                             e('div', { className: 'flex gap-3 pt-4' },
                                 e('button', {
                                     onClick: handleSubmit,
-                                    className: 'flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2'
+                                    className: 'flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2'
                                 }, e(CheckIcon), editingId ? 'Opslaan' : 'Toevoegen'),
                                 e('button', {
-                                    onClick: resetForm,
-                                    className: 'px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition'
-                                }, 'Annuleren')
-                            )
+                                    onClick: () => { setShowForm(false); setEditingId(null); setShowNewCategory(false); },
+                                    className: 'px-6 py-3 bg-gray-200 rounded-lg font-medium'
+                                }, 'Annuleren'))
                         )
                     ),
-
-                    // Transactions List
                     e('div', { className: 'bg-white rounded-2xl shadow-lg p-6' },
-                        e('h2', { className: 'text-xl font-bold text-gray-800 mb-4' }, 'Alle Transacties'),
-                        
+                        e('h2', { className: 'text-xl font-bold mb-4' }, 'Alle Transacties'),
                         transactions.length === 0 
-                            ? e('p', { className: 'text-gray-500 text-center py-8' }, 'Nog geen transacties toegevoegd')
+                            ? e('p', { className: 'text-gray-500 text-center py-8' }, 'Nog geen transacties')
                             : e('div', { className: 'space-y-3' },
-                                ...transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(transaction =>
-                                    e('div', {
-                                        key: transaction.id,
-                                        className: 'border border-gray-200 rounded-xl p-4 hover:shadow-md transition'
-                                    },
-                                        e('div', { className: 'flex justify-between items-start mb-2' },
+                                ...transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(t =>
+                                    e('div', { key: t.id, className: 'border rounded-xl p-4 hover:shadow-md' },
+                                        e('div', { className: 'flex justify-between items-start' },
                                             e('div', { className: 'flex-1' },
                                                 e('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
-                                                    e('h3', { className: 'font-semibold text-gray-800' }, transaction.description),
-                                                    transaction.category && e('span', { className: 'px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full' }, transaction.category),
-                                                    transaction.isSplit && e('span', { className: 'px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full' }, 'Gesplitst')
+                                                    e('h3', { className: 'font-semibold' }, t.description),
+                                                    t.category && e('span', { className: 'px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full' }, t.category)
                                                 ),
-                                                e('p', { className: 'text-sm text-gray-500' }, 
-                                                    new Date(transaction.date).toLocaleDateString('nl-NL', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric'
-                                                    })
-                                                )
-                                            ),
+                                                e('p', { className: 'text-sm text-gray-500' },
+                                                    new Date(t.date).toLocaleDateString('nl-NL'))),
                                             e('div', { className: 'flex items-center gap-3' },
-                                                e('span', { className: `text-xl font-bold ${transaction.type === 'uitgave' ? 'text-red-600' : 'text-green-600'}` },
-                                                    `${transaction.type === 'uitgave' ? '-' : '+'} € ${transaction.amount.toLocaleString('nl-NL')}`
-                                                ),
+                                                e('span', { className: `text-xl font-bold ${t.type === 'uitgave' ? 'text-red-600' : 'text-green-600'}` },
+                                                    `${t.type === 'uitgave' ? '-' : '+'} € ${t.amount.toLocaleString('nl-NL')}`),
                                                 e('button', {
-                                                    onClick: () => editTransaction(transaction),
-                                                    className: 'p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition'
+                                                    onClick: () => {
+                                                        setFormData({ description: t.description, amount: t.amount.toString(),
+                                                            type: t.type, category: t.category, date: t.date, notes: t.notes || '', files: t.files || [] });
+                                                        setEditingId(t.id); setShowForm(true);
+                                                    }, className: 'p-2 text-blue-600 hover:bg-blue-50 rounded-lg'
                                                 }, e(EditIcon)),
                                                 e('button', {
-                                                    onClick: () => deleteTransaction(transaction.id),
-                                                    className: 'p-2 text-red-600 hover:bg-red-50 rounded-lg transition'
-                                                }, e(TrashIcon))
-                                            )
-                                        ),
-                                        
-                                        transaction.notes && e('p', { className: 'text-sm text-gray-600 mb-2' }, transaction.notes),
-                                        
-                                        transaction.files.length > 0 && e('div', { className: 'flex flex-wrap gap-2 mt-2' },
-                                            ...transaction.files.map((file, index) =>
-                                                e('a', {
-                                                    key: index,
-                                                    href: file.data,
-                                                    download: file.name,
-                                                    className: 'flex items-center gap-2 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition'
-                                                }, e(FileIcon), file.name)
-                                            )
-                                        )
-                                    )
-                                )
-                            )
+                                                    onClick: () => { if (confirm('Verwijderen?')) setTransactions(prev => prev.filter(x => x.id !== t.id)); },
+                                                    className: 'p-2 text-red-600 hover:bg-red-50 rounded-lg'
+                                                }, e(TrashIcon)))))))
                     )
                 )
             );
         }
 
-        // Render the app
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(e(BudgetTracker));
+        ReactDOM.createRoot(document.getElementById('root')).render(e(BudgetTracker));
     </script>
 </body>
 </html>
