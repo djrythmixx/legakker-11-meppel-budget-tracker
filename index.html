@@ -54,6 +54,7 @@
             const [splitItems, setSplitItems] = useState([{ description: '', amount: '' }]);
             const [newCategoryInput, setNewCategoryInput] = useState('');
             const [showNewCategory, setShowNewCategory] = useState(false);
+            const [showManageCategories, setShowManageCategories] = useState(false);
 
             useEffect(() => { localStorage.setItem('startBudget', startBudget.toString()); }, [startBudget]);
             useEffect(() => { localStorage.setItem('transactions', JSON.stringify(transactions)); }, [transactions]);
@@ -69,6 +70,15 @@
                     setFormData(p => ({ ...p, category: newCat }));
                     setNewCategoryInput('');
                     setShowNewCategory(false);
+                }
+            };
+
+            const deleteCategory = (catToDelete) => {
+                if (confirm(`Categorie "${catToDelete}" verwijderen?`)) {
+                    setCategories(categories.filter(c => c !== catToDelete));
+                    if (formData.category === catToDelete) {
+                        setFormData(p => ({ ...p, category: '' }));
+                    }
                 }
             };
 
@@ -125,14 +135,45 @@
                                 e('div', { className: 'text-2xl font-bold' }, `€ ${remaining.toLocaleString('nl-NL')}`))
                         )
                     ),
-                    !showForm && e('button', {
-                        onClick: () => setShowForm(true),
-                        className: 'w-full md:w-auto mb-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg'
-                    }, e(PlusIcon), 'Nieuwe Uitgave/Minderwerk'),
+                    !showForm && e('div', { className: 'flex gap-3 mb-6' },
+                        e('button', {
+                            onClick: () => { setShowForm(true); setShowManageCategories(false); },
+                            className: 'flex-1 md:flex-none px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg'
+                        }, e(PlusIcon), 'Nieuwe Uitgave/Minderwerk'),
+                        e('button', {
+                            onClick: () => setShowManageCategories(true),
+                            className: 'px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 flex items-center justify-center gap-2'
+                        }, 'Beheer Categorieën')
+                    ),
+                    showManageCategories && e('div', { className: 'bg-white rounded-2xl shadow-lg p-6 mb-6' },
+                        e('div', { className: 'flex justify-between items-center mb-4' },
+                            e('h2', { className: 'text-xl font-bold' }, 'Beheer Categorieën'),
+                            e('button', { 
+                                onClick: () => setShowManageCategories(false),
+                                className: 'text-gray-400 hover:text-gray-600'
+                            }, e(XIcon))
+                        ),
+                        e('div', { className: 'space-y-2' },
+                            categories.length === 0 
+                                ? e('p', { className: 'text-gray-500 text-center py-4' }, 'Geen categorieën')
+                                : categories.map(cat => 
+                                    e('div', { 
+                                        key: cat,
+                                        className: 'flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100'
+                                    },
+                                        e('span', { className: 'font-medium' }, cat),
+                                        e('button', {
+                                            onClick: () => deleteCategory(cat),
+                                            className: 'p-2 text-red-600 hover:bg-red-50 rounded-lg'
+                                        }, e(TrashIcon))
+                                    )
+                                )
+                        )
+                    ),
                     showForm && e('div', { className: 'bg-white rounded-2xl shadow-lg p-6 mb-6' },
                         e('div', { className: 'flex justify-between items-center mb-4' },
                             e('h2', { className: 'text-xl font-bold' }, editingId ? 'Bewerk' : 'Nieuwe Transactie'),
-                            e('button', { onClick: () => { setShowForm(false); setEditingId(null); setShowNewCategory(false); } }, e(XIcon))
+                            e('button', { onClick: () => { setShowForm(false); setEditingId(null); setShowNewCategory(false); setShowManageCategories(false); } }, e(XIcon))
                         ),
                         e('div', { className: 'space-y-4' },
                             e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
@@ -228,7 +269,7 @@
                                     className: 'flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2'
                                 }, e(CheckIcon), editingId ? 'Opslaan' : 'Toevoegen'),
                                 e('button', {
-                                    onClick: () => { setShowForm(false); setEditingId(null); setShowNewCategory(false); },
+                                    onClick: () => { setShowForm(false); setEditingId(null); setShowNewCategory(false); setShowManageCategories(false); },
                                     className: 'px-6 py-3 bg-gray-200 rounded-lg font-medium'
                                 }, 'Annuleren'))
                         )
